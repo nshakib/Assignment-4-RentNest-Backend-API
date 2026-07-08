@@ -67,9 +67,16 @@ const updateProperty = catchAsync(async (req : Request, res : Response, next : N
 })
 
 const deleteProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
-    const id = req.params.id;
+     const landlordId = req.user?.id;
+    const isAdmin = req.user?.role === "ADMIN";
 
-    const result = await propertyService.deleteProperty(id);
+    const propertyId = req.params.id;
+    if(!propertyId){
+        throw new Error("Property id is required in the params");
+    }
+    const payload = req.body;
+
+    const result = await propertyService.deleteProperty(propertyId as string, landlordId as string, isAdmin);
 
     sendResponse(res, {
         success : true,

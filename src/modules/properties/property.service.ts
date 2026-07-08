@@ -232,14 +232,22 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
 
 }
 
-const deleteProperty = async (id : string) => {
-    const result = await prisma.property.delete({
+const deleteProperty = async (propertyId: string, landlordId : string, isAdmin : boolean) => {
+    const property = await prisma.property.findUniqueOrThrow({
         where : {
-            id
+            id: propertyId
         }
     })
 
-    return result
+    if (!isAdmin && property.landlordId !== landlordId) {
+        throw new Error("You are not the owner of this property!")
+    }
+
+    await prisma.property.delete({
+        where : {
+            id : propertyId
+        }
+    })
 }
 
 const getPropertyStats = async () => {
