@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma"
-import { ICreatePropertyPayload, IPropertyQuery } from "./property.interface"
+import { ICreatePropertyPayload, IPropertyQuery, IUpdatePropertyPayload } from "./property.interface"
 import { PropertyWhereInput } from "../../../generated/prisma/models"
 
 
@@ -162,25 +162,73 @@ const getAllProperties = async (query: IPropertyQuery) => {
     }
 }
 
-const getPropertyById = async (id : string) => {
-    const result = await prisma.property.findUniqueOrThrow({
+const getPropertyById = async (propertyId : string) => {
+    const property = await prisma.property.findUniqueOrThrow({
         where : {
-            id
+            id: propertyId
+        },
+        include:{
+            landlord : {
+                omit:{password:true},
+            },
+            amenities: {
+                include: {
+                    amenity: true  // pulls the actual Amenity record (name, icon, etc.)
+                }
+            },
+            category : true,
+            images : true,
+            reviews : true,
+            _count:{
+                select : {
+                    reviews : true
+                }
+            }
         }
     })
 
-    return result
+    if (!property) {
+        throw new Error('Property not found');
+    }
+
+    return property
 }
 
-const updateProperty = async (id : string, payload : ICreatePropertyPayload) => {
-    const result = await prisma.property.update({
+const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayload, landlordId : string, isAdmin:boolean) => {
+    const property = await prisma.property.findUniqueOrThrow({
         where : {
-            id
-        },
-        data : payload
+            id : propertyId
+        }
     })
 
-    return result
+    if(!isAdmin && property.landlordId !== landlordId){
+        throw new Error("You are not the owner of this property!")
+    }
+
+    const { amenities, ...propertyData } = payload;
+    const result = await prisma.property.update({
+        where : {
+            id : propertyId
+        },
+        data: {
+            ...propertyData,
+            ...(amenities && {
+                amenities: {
+                deleteMany: {},                      // clear old links
+                create: amenities.map((amenityId) => ({ amenityId })),
+                },
+            }),
+        },
+        include: {
+            landlord: {
+                omit: {
+                    password: true
+                }
+            },
+        }
+    })
+
+    return result;
 
 }
 

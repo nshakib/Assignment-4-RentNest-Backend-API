@@ -47,10 +47,16 @@ const getPropertyById = catchAsync(async (req : Request, res : Response, next : 
 })
 
 const updateProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
-    const id = req.params.id;
+    const landlordId = req.user?.id;
+    const isAdmin = req.user?.role === "ADMIN";
+
+    const propertyId = req.params.id;
+    if(!propertyId){
+        throw new Error("Property id is required in the params");
+    }
     const payload = req.body;
 
-    const result = await propertyService.updateProperty(id, payload);
+    const result = await propertyService.updateProperty(propertyId as string, payload, landlordId as string, isAdmin);
 
     sendResponse(res, {
         success : true,

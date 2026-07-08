@@ -1,3 +1,5 @@
+import { PropertyStatus } from "../../../generated/prisma/enums"
+
 export interface ICreatePropertyPayload {
     categoryId: string
     title: string
@@ -30,7 +32,7 @@ export interface IUpdatePropertyPayload{
     city?: string
     neighborhood?: string
     streetAddress?: string
-    status?: string
+    status?: PropertyStatus
     familyAllowed?: boolean
     bachelorAllowed?: boolean
     petsAllowed?: boolean
