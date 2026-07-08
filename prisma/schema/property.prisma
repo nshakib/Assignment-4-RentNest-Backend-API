@@ -1,0 +1,47 @@
+model Property {
+  id              String   @id @default(uuid())
+
+  landlordId      String
+  categoryId      String
+
+  title           String   @db.VarChar(255)
+  description     String?  @db.Text
+
+  areaSqft        Int?
+  bedrooms        Int?
+  bathrooms       Int?
+
+  monthlyRent     Decimal  @db.Decimal(10, 2)
+  depositAmount   Decimal  @db.Decimal(10, 2)
+  maintenanceFee  Decimal? @db.Decimal(10, 2)
+
+  city            String   @db.VarChar(100)
+  neighborhood    String?  @db.VarChar(150)
+  streetAddress   String   @db.VarChar(255)
+
+  status          String   @default("active") @db.VarChar(50)
+
+  familyAllowed   Boolean  @default(false)
+  bachelorAllowed Boolean  @default(false)
+  petsAllowed     Boolean  @default(false)
+  smokingAllowed  Boolean  @default(false)
+
+  availableFrom   DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  landlord        User @relation("LandlordProperties", fields: [landlordId], references: [id])
+  category         Category           @relation(fields: [categoryId], references: [id])
+  images           PropertyImage[]
+  amenities        PropertyAmenity[]
+  requests         RentalRequest[]
+  reviews          Review[]
+
+  @@index([landlordId])
+  @@index([categoryId])
+  @@index([city, status])
+
+  @@map("property")
+}
