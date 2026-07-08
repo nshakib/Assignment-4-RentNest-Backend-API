@@ -20,6 +20,89 @@ const createProperty = catchAsync(async (req : Request, res : Response, next : N
     })
 })
 
+const getAllProperties = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const query = req.query;
+    const result = await propertyService.getAllProperties(query);
+
+    sendResponse(res, {
+        success : true,
+        statusCode : httpStatus.OK,
+        message : "Properties Fetched Successfully",
+        data : result.data,
+        meta: result.meta
+    })
+})
+
+const getPropertyById = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const id = req.params.id;
+
+    const result = await propertyService.getPropertyById(id);
+
+    sendResponse(res, {
+        success : true,
+        statusCode : httpStatus.OK,
+        message : "Property Fetched Successfully",
+        data : result
+    })
+})
+
+const updateProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const id = req.params.id;
+    const payload = req.body;
+
+    const result = await propertyService.updateProperty(id, payload);
+
+    sendResponse(res, {
+        success : true,
+        statusCode : httpStatus.OK,
+        message : "Property Updated Successfully",
+        data : result
+    })
+})
+
+const deleteProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const id = req.params.id;
+
+    const result = await propertyService.deleteProperty(id);
+
+    sendResponse(res, {
+        success : true,
+        statusCode : httpStatus.OK,
+        message : "Property Deleted Successfully",
+        data : result
+    })
+})
+
+const getPropertyStats = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const result = await propertyService.getPropertyStats();
+
+    sendResponse(res, {
+        success : true,
+        statusCode : httpStatus.OK,
+        message : "Property Stats Fetched Successfully",
+        data : result
+    })
+})
+
+const getMyProperties = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const id = req.user?.id;
+
+    const result = await propertyService.getMyProperties(id as string);
+
+    sendResponse(res, {
+        success : true,
+        statusCode : httpStatus.OK,
+        message : "My Properties Fetched Successfully",
+        data : result
+    })
+})
+
 export const propertyController = {
-    createProperty
+    createProperty,
+    getAllProperties,
+    getPropertyById,
+    updateProperty,
+    deleteProperty,
+    getPropertyStats,
+    getMyProperties
 }
