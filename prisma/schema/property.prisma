@@ -12,7 +12,6 @@ model Property {
   bathrooms       Int?
 
   monthlyRent     Decimal  @db.Decimal(10, 2)
-  depositAmount   Decimal  @db.Decimal(10, 2)
   maintenanceFee  Decimal? @db.Decimal(10, 2)
 
   city            String   @db.VarChar(100)

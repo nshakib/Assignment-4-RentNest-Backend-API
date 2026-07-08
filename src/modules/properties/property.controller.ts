@@ -15,7 +15,7 @@ const createProperty = catchAsync(async (req : Request, res : Response, next : N
     sendResponse(res, {
         success : true,
         statusCode : httpStatus.CREATED,
-        message : "Post Created SuccessFully",
+        message : "Property Created SuccessFully",
         data : result
     })
 })

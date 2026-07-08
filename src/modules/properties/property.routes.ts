@@ -6,6 +6,6 @@ import { auth } from "../../middlewares/auth";
 
 const router = Router();
 
-router.post("/", auth(Role.LANDLORD), propertyController.createProperty)
+router.post("/", auth(Role.LANDLORD,Role.ADMIN), propertyController.createProperty)
 
 export const propertyRoutes = router

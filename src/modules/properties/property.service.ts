@@ -2,7 +2,7 @@ import { prisma } from "../../lib/prisma"
 import { ICreatePropertyPayload } from "./property.interface"
 
 
-const createProperty = async (payload : ICreatePropertyPayload, userId : string) => {
+const createProperty = async ( payload : ICreatePropertyPayload, userId : string) => {
     const user = await prisma.user.findUniqueOrThrow({
         where : {
             id : userId
@@ -12,11 +12,19 @@ const createProperty = async (payload : ICreatePropertyPayload, userId : string)
     if(user.activeStatus === "BLOCKED"){
         throw new Error("User is blocked!")
     }
+    const { amenities, ...propertyData } = payload
 
     const result = await prisma.property.create({
         data : {
-            ...payload,
-            landlordId : userId
+            ...propertyData,
+            landlordId : userId,
+            amenities: amenities && amenities.length > 0
+                ? {
+                    create: amenities.map((amenityId) => ({
+                        amenityId // or whatever the FK field is named on PropertyAmenity
+                    }))
+                }
+                : undefined
         }
     })
 
