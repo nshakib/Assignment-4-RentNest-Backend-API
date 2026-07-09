@@ -75,6 +75,38 @@ const createPaymentIntent = async (tenantId: string, payload: ICreatePaymentPayl
     }
 }
 
+const confirmPayment = async (paymentIntentId: string) => {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+
+    const payment = await prisma.payment.findUniqueOrThrow({
+        where: { stripePaymentIntentId: paymentIntentId }
+    })
+
+    if (paymentIntent.status === "succeeded") {
+        return prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+                status: PaymentStatus.PAID,
+                paidAt: new Date()
+            }
+        })
+    }
+
+    if (paymentIntent.status === "canceled" || paymentIntent.status === "requires_payment_method") {
+        return prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+                status: PaymentStatus.FAILED,
+                failureReason: `Stripe status: ${paymentIntent.status}`
+            }
+        })
+    }
+
+    // still processing/requires_action etc — leave as PENDING
+    return payment
+}
+
 export const paymentService = {
-    createPaymentIntent
+    createPaymentIntent,
+    confirmPayment,
 }

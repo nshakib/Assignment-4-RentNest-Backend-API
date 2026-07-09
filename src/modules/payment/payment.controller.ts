@@ -17,6 +17,20 @@ const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const confirmPayment = catchAsync(async (req: Request, res: Response) => {
+    const { paymentIntentId } = req.body
+
+    const result = await paymentService.confirmPayment(paymentIntentId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Payment status synced successfully",
+        data: result
+    })
+})
+
 export const paymentController = {
-    createPaymentIntent
+    createPaymentIntent,
+    confirmPayment,
 }
