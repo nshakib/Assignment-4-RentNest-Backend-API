@@ -23,3 +23,9 @@ enum RentalRequestStatus {
   TERMINATED
   COMPLETED
 }
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}

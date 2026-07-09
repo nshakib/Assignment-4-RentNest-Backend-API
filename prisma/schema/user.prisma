@@ -11,6 +11,7 @@ model User {
   ownedProperties Property[] @relation("LandlordProperties")
   rentalRequests RentalRequest[]
   reviews         Review[]
+  payments Payment[]
 
   @@map("users")
 }

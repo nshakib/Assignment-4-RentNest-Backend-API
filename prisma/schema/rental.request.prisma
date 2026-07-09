@@ -24,6 +24,7 @@ model RentalRequest {
   property           Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenant             User     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   reviews Review[]
+  payments Payment[]
 
   
   @@index([tenantId, status])
