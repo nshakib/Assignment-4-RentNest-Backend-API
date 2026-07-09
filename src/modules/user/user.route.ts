@@ -9,6 +9,8 @@ router.get("/me", auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), userController.get
 
 router.patch("/me", auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), userController.updateMyProfile)
 
+router.get("/", auth(Role.ADMIN), userController.getAllUsers)
+
 
 
 export const userRoutes = router;

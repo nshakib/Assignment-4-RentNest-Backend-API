@@ -48,7 +48,26 @@ const updateMyProfile = async (userId: string, payload: IUpdateProfilePayload) =
     return result
 }
 
+const getAllUsers = async () => {
+    const users = await prisma.user.findMany({
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            activeStatus: true,
+            createdAt: true,
+            updatedAt: true
+            // password excluded
+        },
+        orderBy: { createdAt: "desc" }
+    })
+
+    return users
+}
+
 export const userService = {
     getMyProfile,
-    updateMyProfile
+    updateMyProfile,
+    getAllUsers,
 }
