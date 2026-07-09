@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma"
-import { ICreatePropertyPayload, IPropertyQuery, IUpdatePropertyPayload } from "./property.interface"
+import { ICreatePropertyPayload, IPropertyQuery, IUpdatePropertyPayload, IUpdatePropertyStatusPayload } from "./property.interface"
 import { PropertyWhereInput } from "../../../generated/prisma/models"
+import { PropertyStatus } from "../../../generated/prisma/enums"
 
 
 const createProperty = async ( payload : ICreatePropertyPayload, userId : string) => {
@@ -52,7 +53,7 @@ const buildWhereClause = (query: IPropertyQuery): PropertyWhereInput => {
     const andConditions: PropertyWhereInput[] = []
 
     // Default to only showing active listings unless caller overrides it
-    andConditions.push({ status: status ?? "active" })
+    andConditions.push({ status: (status as PropertyStatus) ?? PropertyStatus.ACTIVE })
 
     if (searchTerm) {
         andConditions.push({
@@ -250,22 +251,57 @@ const deleteProperty = async (propertyId: string, landlordId : string, isAdmin :
     })
 }
 
-const getPropertyStats = async () => {
-    const result = await prisma.property.groupBy({
-        by : ["status"],
-        _count : {
-            id : true
+const updatePropertyStatus = async (propertyId: string, landlordId: string, payload: IUpdatePropertyStatusPayload) => {
+    const property = await prisma.property.findUniqueOrThrow({
+        where: { id: propertyId }
+    })
+
+    if (property.landlordId !== landlordId) {
+        throw new Error("You are not authorized to update this property")
+    }
+
+
+
+    const result = await prisma.property.update({
+        where: { id: propertyId },
+        data: { 
+            status: payload.status 
         }
     })
 
     return result
 }
 
+const getPropertyStatusSummary = async (landlordId: string) => {
+    const result = await prisma.property.groupBy({
+        by: ["status"],
+        where: { landlordId },
+        _count: {
+            id: true
+        }
+    })
+
+    const summary = result.reduce((acc, item) => {
+        acc[item.status] = item._count.id
+        return acc
+    }, {} as Record<string, number>)
+
+    return summary
+}
+
 const getMyProperties = async (userId : string) => {
     const result = await prisma.property.findMany({
         where : {
             landlordId : userId
-        }
+        },
+        include: {
+            category: true,
+            images: true,
+            amenities: {
+                include: { amenity: true }
+            }
+        },
+        orderBy: { createdAt: "desc" }
     })
 
     return result
@@ -277,6 +313,7 @@ export const propertyService = {
     getPropertyById,
     updateProperty,
     deleteProperty,
-    getPropertyStats,
+    updatePropertyStatus,
+    getPropertyStatusSummary,
     getMyProperties
 }

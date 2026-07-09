@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { propertyService } from "./property.service";
+import { PropertyStatus } from "../../../generated/prisma/enums";
 
 const createProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const id = req.user?.id
@@ -36,7 +37,7 @@ const getAllProperties = catchAsync(async (req : Request, res : Response, next :
 const getPropertyById = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const id = req.params.id;
 
-    const result = await propertyService.getPropertyById(id);
+    const result = await propertyService.getPropertyById(id as string);
 
     sendResponse(res, {
         success : true,
@@ -85,22 +86,42 @@ const deleteProperty = catchAsync(async (req : Request, res : Response, next : N
         data : result
     })
 })
+const updatePropertyStatus = catchAsync(async (req: Request, res: Response) => {
+    const landlordId = req.user?.id
+    const propertyId = req.params.id
+    const payload = req.body
 
-const getPropertyStats = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
-    const result = await propertyService.getPropertyStats();
+    if(!propertyId){
+        throw new Error("Property id is required in the params");
+    }
+
+    const result = await propertyService.updatePropertyStatus(propertyId as string, landlordId as string,payload)
 
     sendResponse(res, {
-        success : true,
-        statusCode : httpStatus.OK,
-        message : "Property Stats Fetched Successfully",
-        data : result
+        statusCode: 200,
+        success: true,
+        message: "Property status updated successfully",
+        data: result
+    })
+})
+
+const getPropertyStatusSummary = catchAsync(async (req: Request, res: Response) => {
+    const landlordId = req.user?.id
+
+    const result = await propertyService.getPropertyStatusSummary(landlordId as string)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Property status summary retrieved successfully",
+        data: result
     })
 })
 
 const getMyProperties = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
-    const id = req.user?.id;
+    const landlordId = req.user?.id;
 
-    const result = await propertyService.getMyProperties(id as string);
+    const result = await propertyService.getMyProperties(landlordId as string);
 
     sendResponse(res, {
         success : true,
@@ -116,6 +137,7 @@ export const propertyController = {
     getPropertyById,
     updateProperty,
     deleteProperty,
-    getPropertyStats,
+    updatePropertyStatus,
+    getPropertyStatusSummary,
     getMyProperties
 }

@@ -60,4 +60,8 @@ export interface IPropertyQuery {
     limit?: string
     sortOrder?: string
     sortBy?: string
-} 
+}
+
+export interface IUpdatePropertyStatusPayload {
+    status: PropertyStatus
+}

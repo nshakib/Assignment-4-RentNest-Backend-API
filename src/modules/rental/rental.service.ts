@@ -1,6 +1,6 @@
 // Tenant: submit a rental request
 
-import { RentalRequestStatus } from "../../../generated/prisma/enums";
+import { PropertyStatus, RentalRequestStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreateRentalRequestPayload, IRejectRentalRequestPayload, IRentalRequestQuery } from "./rental.interface";
 
@@ -15,7 +15,7 @@ const submitRentalRequest = async (tenantId: string, propertyId: string, payload
         throw new Error("You cannot submit a rental request for your own property!")
     }
 
-  if (property.status !== "active") {
+  if (property.status !== PropertyStatus.ACTIVE) {
     throw new Error("This property is not available for rent");
   }
 

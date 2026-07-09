@@ -18,7 +18,7 @@ model Property {
   neighborhood    String?  @db.VarChar(150)
   streetAddress   String   @db.VarChar(255)
 
-  status          String   @default("active") @db.VarChar(50)
+  status          String   @default("ACTIVE") @db.VarChar(50)
 
   familyAllowed   Boolean  @default(false)
   bachelorAllowed Boolean  @default(false)
