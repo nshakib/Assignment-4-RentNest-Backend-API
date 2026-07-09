@@ -5,7 +5,10 @@ import { userController } from "./user.controller";
 
 const router = Router();
 
-router.get("/me", auth(Role.ADMIN), userController.getMyProfile)
+router.get("/me", auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), userController.getMyProfile)
+
+router.patch("/me", auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), userController.updateMyProfile)
+
 
 
 export const userRoutes = router;
