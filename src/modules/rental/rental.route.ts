@@ -12,5 +12,8 @@ router.post("/:id", auth(Role.TENANT),rentalController.createRentalRequest);
 router.get("/my-requests", auth(Role.TENANT), rentalController.getMyRentalRequests)
 router.get("/received", auth(Role.LANDLORD), rentalController.getReceivedRentalRequests)
 
+router.patch("/:id/approve", auth(Role.LANDLORD), rentalController.approveRentalRequest)
+router.patch("/:id/reject", auth(Role.LANDLORD), rentalController.rejectRentalRequest)
+
 
 export const rentalRoutes = router

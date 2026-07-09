@@ -2,7 +2,7 @@
 
 import { RentalRequestStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { ICreateRentalRequestPayload, IRentalRequestQuery } from "./rental.interface";
+import { ICreateRentalRequestPayload, IRejectRentalRequestPayload, IRentalRequestQuery } from "./rental.interface";
 
 const submitRentalRequest = async (tenantId: string, propertyId: string, payload: ICreateRentalRequestPayload) => {
   const property = await prisma.property.findUniqueOrThrow({
@@ -121,8 +121,73 @@ const getReceivedRentalRequests = async (landlordId: string, query: IRentalReque
     }
 }
 
+const approveRentalRequest = async (requestId: string, landlordId: string) => {
+    const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
+        where: { id: requestId },
+        include: { property: true }
+    })
+
+    if (rentalRequest.property.landlordId !== landlordId) {
+        throw new Error("You are not authorized to approve this request")
+    }
+
+    if (rentalRequest.status !== RentalRequestStatus.PENDING) {
+        throw new Error(`Cannot approve a request that is already ${rentalRequest.status}`)
+    }
+
+    const result = await prisma.rentalRequest.update({
+        where: { id: requestId },
+        data: {
+            status: RentalRequestStatus.APPROVED,
+            approvedAt: new Date()
+        },
+        include: {
+            property: true,
+            tenant: { select: { id: true, name: true, email: true } }
+        }
+    })
+
+    return result
+}
+
+const rejectRentalRequest = async (
+    requestId: string,
+    landlordId: string,
+    payload: IRejectRentalRequestPayload
+) => {
+    const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
+        where: { id: requestId },
+        include: { property: true }
+    })
+
+    if (rentalRequest.property.landlordId !== landlordId) {
+        throw new Error("You are not authorized to reject this request")
+    }
+
+    if (rentalRequest.status !== RentalRequestStatus.PENDING) {
+        throw new Error(`Cannot reject a request that is already ${rentalRequest.status}`)
+    }
+
+    const result = await prisma.rentalRequest.update({
+        where: { id: requestId },
+        data: {
+            status: RentalRequestStatus.REJECTED,
+            rejectedAt: new Date(),
+            rejectionReason: payload.rejectionReason
+        },
+        include: {
+            property: true,
+            tenant: { select: { id: true, name: true, email: true } }
+        }
+    })
+
+    return result
+}
+
 export const rentalService = {
   submitRentalRequest,
   getMyRentalRequests,
-  getReceivedRentalRequests
+  getReceivedRentalRequests,
+  approveRentalRequest,
+  rejectRentalRequest
 };

@@ -52,8 +52,39 @@ const getReceivedRentalRequests = catchAsync(async (req: Request, res: Response)
 })
 
 
+const approveRentalRequest = catchAsync(async (req: Request, res: Response) => {
+    const landlordId = req.user?.id
+    const requestId  = req.params.id
+
+    const result = await rentalService.approveRentalRequest(requestId as string, landlordId as string)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Rental request approved successfully",
+        data: result
+    })
+})
+
+const rejectRentalRequest = catchAsync(async (req: Request, res: Response) => {
+    const landlordId = req.user?.id
+    const requestId = req.params.id
+
+    const result = await rentalService.rejectRentalRequest(requestId as string, landlordId as string, req.body)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Rental request rejected successfully",
+        data: result
+    })
+})
+
+
 export const rentalController = {
     createRentalRequest,
     getMyRentalRequests,
-    getReceivedRentalRequests
+    getReceivedRentalRequests,
+    approveRentalRequest,
+    rejectRentalRequest
 }

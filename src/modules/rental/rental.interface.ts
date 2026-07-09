@@ -14,3 +14,11 @@ export interface IRentalRequestQuery {
     sortOrder?: string
     sortBy?: string
 }
+
+// rentalRequest.interface.ts
+export interface IApproveRentalRequestPayload {
+}
+
+export interface IRejectRentalRequestPayload {
+    rejectionReason: string
+}
