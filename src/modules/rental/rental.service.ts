@@ -2,7 +2,7 @@
 
 import { RentalRequestStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { ICreateRentalRequestPayload } from "./rental.interface";
+import { ICreateRentalRequestPayload, IRentalRequestQuery } from "./rental.interface";
 
 const submitRentalRequest = async (tenantId: string, propertyId: string, payload: ICreateRentalRequestPayload) => {
   const property = await prisma.property.findUniqueOrThrow({
@@ -46,6 +46,83 @@ const submitRentalRequest = async (tenantId: string, propertyId: string, payload
   return result;
 };
 
+const getMyRentalRequests = async (tenantId: string, query: IRentalRequestQuery) => {
+    const page = Math.max(Number(query.page) || 1, 1)
+    const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100)
+    const skip = (page - 1) * limit
+
+    const sortBy = query.sortBy || "createdAt"
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc"
+
+    const where = {
+        tenantId,
+        ...(query.status ? { status: query.status } : {})
+    }
+
+    const [requests, total] = await Promise.all([
+        prisma.rentalRequest.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: { [sortBy]: sortOrder },
+            include: {
+                property: {
+                    include: {
+                        category: true,
+                        images: true,
+                        landlord: {
+                            select: { id: true, name: true, email: true }
+                        }
+                    }
+                }
+            }
+        }),
+        prisma.rentalRequest.count({ where })
+    ])
+
+    return {
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        data: requests
+    }
+}
+
+const getReceivedRentalRequests = async (landlordId: string, query: IRentalRequestQuery) => {
+    const page = Math.max(Number(query.page) || 1, 1)
+    const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100)
+    const skip = (page - 1) * limit
+
+    const sortBy = query.sortBy || "createdAt"
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc"
+
+    const where = {
+        property: { landlordId },
+        ...(query.status ? { status: query.status } : {})
+    }
+
+    const [requests, total] = await Promise.all([
+        prisma.rentalRequest.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: { [sortBy]: sortOrder },
+            include: {
+                property: true,
+                tenant: {
+                    select: { id: true, name: true, email: true }
+                }
+            }
+        }),
+        prisma.rentalRequest.count({ where })
+    ])
+
+    return {
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        data: requests
+    }
+}
+
 export const rentalService = {
   submitRentalRequest,
+  getMyRentalRequests,
+  getReceivedRentalRequests
 };

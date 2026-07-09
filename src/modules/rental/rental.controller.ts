@@ -25,6 +25,35 @@ const createRentalRequest = catchAsync(async (req : Request, res : Response, nex
     })
 })
 
+const getMyRentalRequests = catchAsync(async (req: Request, res: Response) => {
+    const tenantId = req.user?.id // adjust based on your auth middleware's shape
+    const result = await rentalService.getMyRentalRequests(tenantId as string, req.query)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Rental request history retrieved successfully",
+        meta: result.meta,
+        data: result.data
+    })
+})
+
+const getReceivedRentalRequests = catchAsync(async (req: Request, res: Response) => {
+    const landlordId = req.user?.id
+    const result = await rentalService.getReceivedRentalRequests(landlordId as string, req.query)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Received rental requests retrieved successfully",
+        meta: result.meta,
+        data: result.data
+    })
+})
+
+
 export const rentalController = {
-    createRentalRequest
+    createRentalRequest,
+    getMyRentalRequests,
+    getReceivedRentalRequests
 }
