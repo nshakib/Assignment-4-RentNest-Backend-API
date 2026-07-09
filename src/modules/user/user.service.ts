@@ -1,3 +1,4 @@
+import { ActiveStatus, Role } from "../../../generated/prisma/enums"
 import { prisma } from "../../lib/prisma"
 import { IUpdateProfilePayload } from "./user.interface"
 
@@ -66,8 +67,33 @@ const getAllUsers = async () => {
     return users
 }
 
+const updateUserStatus = async (userId: string, activeStatus: ActiveStatus) => {
+    const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId }
+    })
+
+    if (user.role === Role.ADMIN) {
+        throw new Error("Cannot change status of an admin account")
+    }
+
+    const result = await prisma.user.update({
+        where: { id: userId },
+        data: { activeStatus },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            activeStatus: true
+        }
+    })
+
+    return result
+}
+
 export const userService = {
     getMyProfile,
     updateMyProfile,
     getAllUsers,
+    updateUserStatus
 }
