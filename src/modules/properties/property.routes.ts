@@ -8,12 +8,10 @@ const router = Router();
 
 router.post("/", auth(Role.LANDLORD,Role.ADMIN), propertyController.createProperty)
 
-router.get("/", auth(Role.LANDLORD,Role.ADMIN),propertyController.getAllProperties)
-
-router.get("/:id", auth(Role.LANDLORD,Role.ADMIN),propertyController.getPropertyById)
+router.get("/",propertyController.getAllProperties);
+router.get("/:id", propertyController.getPropertyById);
 
 router.patch("/:id", auth(Role.LANDLORD,Role.ADMIN),propertyController.updateProperty)
-
 router.delete("/:id", auth(Role.LANDLORD,Role.ADMIN),propertyController.deleteProperty)
 
 export const propertyRoutes = router
