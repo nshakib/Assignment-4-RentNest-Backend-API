@@ -8,6 +8,7 @@ import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { propertyRoutes } from "./modules/properties/property.routes";
 import { rentalRoutes } from "./modules/rental/rental.route";
 import { reviewRoutes } from "./modules/review/review.route";
+import { userRoutes } from "./modules/user/user.route";
 
 
 const app : Application = express();
@@ -27,9 +28,11 @@ const app : Application = express();
    });
 
     app.use("/api/auth", authRoutes)
+    app.use("/api/users", userRoutes)
     app.use("/api/properties", propertyRoutes)
     app.use("/api/rentals", rentalRoutes)
     app.use("/api/reviews", reviewRoutes)
+
 
     
     app.use(notFound);
