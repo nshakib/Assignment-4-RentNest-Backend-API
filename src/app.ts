@@ -11,6 +11,7 @@ import { reviewRoutes } from "./modules/review/review.route";
 import { userRoutes } from "./modules/user/user.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { paymentController } from "./modules/payment/payment.controller";
+import { categoryRoutes } from "./modules/category/category.route";
 
 
 const app : Application = express();
@@ -36,10 +37,12 @@ const app : Application = express();
 
     app.use("/api/auth", authRoutes)
     app.use("/api/users", userRoutes)
+    app.use("/api/categories", categoryRoutes)
     app.use("/api/properties", propertyRoutes)
     app.use("/api/rentals", rentalRoutes)
     app.use("/api/reviews", reviewRoutes)
     app.use("/api/payment", paymentRoutes)
+
 
 
     
