@@ -24,6 +24,12 @@ enum RentalRequestStatus {
   COMPLETED
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
+
 enum PaymentStatus {
   PENDING
   PAID

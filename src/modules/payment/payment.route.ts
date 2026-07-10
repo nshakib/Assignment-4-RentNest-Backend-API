@@ -7,6 +7,8 @@ import { paymentController } from "./payment.controller";
 
 const router = Router();
 
-router.post("/create-intent", auth(Role.TENANT), paymentController.createPaymentIntent)
+router.post("/checkout-session", auth(Role.TENANT), paymentController.createCheckoutSession)
+router.get("/my-history", auth(Role.TENANT), paymentController.getMyPaymentHistory)
 
-export const reviewRoutes = router
+
+export const paymentRoutes = router

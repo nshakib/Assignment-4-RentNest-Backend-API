@@ -1,4 +1,4 @@
-export interface ICreatePaymentPayload {
+// payment.interface.ts
+export interface ICreateCheckoutSessionPayload {
     rentalRequestId: string
-    monthNumber: number
 }

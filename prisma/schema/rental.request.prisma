@@ -4,6 +4,10 @@ model RentalRequest {
   propertyId         String
   tenantId           String
 
+  stripeCustomerId     String?
+  stripeSubscriptionId String?             @unique
+  subscriptionStatus   SubscriptionStatus?
+
   startDate          DateTime
   endDate            DateTime
   leaseTermMonths    Int?
@@ -23,10 +27,9 @@ model RentalRequest {
 
   property           Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenant             User     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  reviews Review[]
+  reviews  Review[]
   payments Payment[]
 
-  
   @@index([tenantId, status])
   @@index([propertyId, status])
 

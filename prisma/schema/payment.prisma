@@ -5,11 +5,12 @@ model Payment {
   tenantId        String
 
   amount          Decimal       @db.Decimal(10, 2)
-  monthNumber     Int           // which month of the lease this payment covers (1, 2, 3...)
 
   status          PaymentStatus @default(PENDING)
 
-  stripePaymentIntentId String? @unique
+  stripeInvoiceId      String? @unique
+  stripeSubscriptionId String?
+
   paidAt          DateTime?
   failureReason   String?       @db.Text
 
@@ -19,7 +20,6 @@ model Payment {
   rentalRequest   RentalRequest @relation(fields: [rentalRequestId], references: [id], onDelete: Cascade)
   tenant          User          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@unique([rentalRequestId, monthNumber]) // prevents double-paying the same month
   @@index([tenantId])
   @@index([rentalRequestId])
 

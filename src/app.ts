@@ -9,6 +9,8 @@ import { propertyRoutes } from "./modules/properties/property.routes";
 import { rentalRoutes } from "./modules/rental/rental.route";
 import { reviewRoutes } from "./modules/review/review.route";
 import { userRoutes } from "./modules/user/user.route";
+import { paymentRoutes } from "./modules/payment/payment.route";
+import { paymentController } from "./modules/payment/payment.controller";
 
 
 const app : Application = express();
@@ -17,6 +19,11 @@ const app : Application = express();
         origin : config.app_url,
         credentials : true,
     }))
+    app.post("/api/payment/webhook",express.raw({
+         type: "application/json" 
+        }),
+        paymentController.handleStripeWebhook
+    )
 
     app.use(express.json());
     app.use(express.urlencoded({ extended : true }));
@@ -32,6 +39,7 @@ const app : Application = express();
     app.use("/api/properties", propertyRoutes)
     app.use("/api/rentals", rentalRoutes)
     app.use("/api/reviews", reviewRoutes)
+    app.use("/api/payment", paymentRoutes)
 
 
     
