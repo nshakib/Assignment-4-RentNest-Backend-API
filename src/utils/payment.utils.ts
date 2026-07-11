@@ -1,6 +1,6 @@
 import Stripe from "stripe"
 import { prisma } from "../lib/prisma"
-import { PaymentStatus, SubscriptionStatus } from "../../generated/prisma/enums"
+import { PaymentStatus, RentalRequestStatus, SubscriptionStatus } from "../../generated/prisma/enums"
 
 export const getPeriodEnd = (payload: Stripe.Subscription) => {
     const currentPeriodEndInMilliseconds = payload.items.data[0]?.current_period_end!
@@ -21,7 +21,8 @@ export const handleCheckoutCompleted = async (session: Stripe.Checkout.Session) 
         where: { id: rentalRequestId },
         data: {
             stripeSubscriptionId,
-            subscriptionStatus: SubscriptionStatus.ACTIVE
+            subscriptionStatus: SubscriptionStatus.ACTIVE,
+             status: RentalRequestStatus.ACTIVE
         }
     })
 

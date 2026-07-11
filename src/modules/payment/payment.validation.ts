@@ -1,4 +1,3 @@
-// payment.validation.ts
 import { z } from "zod";
 
 export const paymentValidation = {

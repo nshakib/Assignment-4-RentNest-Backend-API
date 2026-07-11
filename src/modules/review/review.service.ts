@@ -1,4 +1,5 @@
 import { RentalRequestStatus } from "../../../generated/prisma/enums"
+import ApiError from "../../errors/ApiError"
 import { prisma } from "../../lib/prisma"
 import { ICreateReviewPayload } from "./review.interface"
 import httpStatus from "http-status"
@@ -12,17 +13,12 @@ const createReview = async (tenantId: string, payload: ICreateReviewPayload) => 
 
     // Only the tenant who made the request can review it
     if (rentalRequest.tenantId !== tenantId) {
-        throw new Error("You are not authorized to review this rental")
+        throw new ApiError(httpStatus.FORBIDDEN, "You are not authorized to review this rental")
     }
 
-    // Only allow reviews on approved rentals
-    if (rentalRequest.status !== RentalRequestStatus.APPROVED) {
-        throw new Error("You can only review a rental that has been approved")
-    }
-
-    // Optional: only allow reviews after the lease has actually ended
-    if (rentalRequest.endDate > new Date()) {
-        throw new Error( "You can only review a rental after it has ended")
+    
+   if (rentalRequest.status !== RentalRequestStatus.COMPLETED) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "You can only review a rental after it has been completed")
     }
 
     // Prevent duplicate reviews (DB constraint also enforces this, but a clean error is nicer)
@@ -31,11 +27,11 @@ const createReview = async (tenantId: string, payload: ICreateReviewPayload) => 
     })
 
     if (existingReview) {
-        throw new Error( "You have already reviewed this rental")
+        throw new ApiError(httpStatus.BAD_REQUEST, "You have already reviewed this rental")
     }
 
     if (payload.rating < 1 || payload.rating > 5) {
-        throw new Error("Rating must be between 1 and 5")
+        throw new ApiError(httpStatus.BAD_REQUEST, "Rating must be between 1 and 5")
     }
 
     const result = await prisma.review.create({

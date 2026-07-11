@@ -3,6 +3,7 @@ class ApiError extends Error {
 
     constructor(statusCode: number, message: string, stack = "") {
         super(message)
+        this.name = "ApiError"
         this.statusCode = statusCode
 
         if (stack) {

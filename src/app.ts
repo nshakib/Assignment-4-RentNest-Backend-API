@@ -12,6 +12,7 @@ import { userRoutes } from "./modules/user/user.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { paymentController } from "./modules/payment/payment.controller";
 import { categoryRoutes } from "./modules/category/category.route";
+import { startExpiredRentalJob } from "./jobs/completeExpiredRentals";
 
 
 const app : Application = express();
@@ -45,7 +46,8 @@ const app : Application = express();
 
 
 
-    
+    startExpiredRentalJob()
+
     app.use(notFound);
 
     app.use(globalErrorHandler)
