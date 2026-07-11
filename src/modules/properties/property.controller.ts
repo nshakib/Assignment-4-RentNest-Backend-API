@@ -4,6 +4,9 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { propertyService } from "./property.service";
 import { PropertyStatus } from "../../../generated/prisma/enums";
+import { IPropertyQuery } from "./property.interface";
+import { PropertyWhereInput } from "../../../generated/prisma/models";
+import { prisma } from "../../lib/prisma";
 
 const createProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const id = req.user?.id
@@ -31,6 +34,18 @@ const getAllProperties = catchAsync(async (req : Request, res : Response, next :
         message : "Properties Fetched Successfully",
         data : result.data,
         meta: result.meta
+    })
+})
+
+const getAllPropertiesForAdmin = catchAsync(async (req: Request, res: Response) => {
+    const result = await propertyService.getAllPropertiesForAdmin(req.query as any)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "All properties retrieved successfully",
+        meta: result.meta,
+        data: result.data
     })
 })
 
@@ -134,6 +149,7 @@ const getMyProperties = catchAsync(async (req : Request, res : Response, next : 
 export const propertyController = {
     createProperty,
     getAllProperties,
+    getAllPropertiesForAdmin,
     getPropertyById,
     updateProperty,
     deleteProperty,

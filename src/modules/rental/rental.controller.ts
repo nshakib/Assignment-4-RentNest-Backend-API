@@ -81,11 +81,23 @@ const rejectRentalRequest = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getAllRentalRequestsForAdmin = catchAsync(async (req: Request, res: Response) => {
+    const result = await rentalService.getAllRentalRequestsForAdmin(req.query as any)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "All rental requests retrieved successfully",
+        meta: result.meta,
+        data: result.data
+    })
+})
 
 export const rentalController = {
     createRentalRequest,
     getMyRentalRequests,
     getReceivedRentalRequests,
     approveRentalRequest,
-    rejectRentalRequest
+    rejectRentalRequest,
+    getAllRentalRequestsForAdmin
 }

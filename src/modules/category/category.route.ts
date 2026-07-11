@@ -13,7 +13,7 @@ router.post(
     ValidateRequest(categoryValidation.createCategoryValidation),
     categoryController.createCategory
 )
-router.get("/",auth(Role.ADMIN), categoryController.getAllCategories)
+router.get("/", categoryController.getAllCategories)
 
 router.patch(
     "/:id",

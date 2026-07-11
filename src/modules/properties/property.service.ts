@@ -163,6 +163,53 @@ const getAllProperties = async (query: IPropertyQuery) => {
     }
 }
 
+const getAllPropertiesForAdmin = async (query: IPropertyQuery) => {
+    const page = Math.max(Number(query.page) || 1, 1)
+    const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100)
+    const skip = (page - 1) * limit
+
+    const sortBy = query.sortBy || "createdAt"
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc"
+
+    const andConditions: PropertyWhereInput[] = []
+
+    if (query.status) {
+        andConditions.push({ status: query.status as PropertyStatus })
+    }
+
+    if (query.searchTerm) {
+        andConditions.push({
+            OR: [
+                { title: { contains: query.searchTerm, mode: "insensitive" } },
+                { city: { contains: query.searchTerm, mode: "insensitive" } }
+            ]
+        })
+    }
+
+    const where: PropertyWhereInput = andConditions.length > 0 ? { AND: andConditions } : {}
+
+    const [properties, total] = await Promise.all([
+        prisma.property.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: { [sortBy]: sortOrder },
+            include: {
+                category: true,
+                landlord: {
+                    select: { id: true, name: true, email: true, activeStatus: true }
+                }
+            }
+        }),
+        prisma.property.count({ where })
+    ])
+
+    return {
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        data: properties
+    }
+}
+
 const getPropertyById = async (propertyId : string) => {
     const property = await prisma.property.findUniqueOrThrow({
         where : {
@@ -310,6 +357,7 @@ const getMyProperties = async (userId : string) => {
 export const propertyService = {
     createProperty,
     getAllProperties,
+    getAllPropertiesForAdmin,
     getPropertyById,
     updateProperty,
     deleteProperty,

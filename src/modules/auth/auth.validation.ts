@@ -18,13 +18,11 @@ const loginValidation = z.object({
     })
 })
 
-const refreshTokenValidation = {
-    refreshToken: z.object({
-        body: z.object({
-            refreshToken: z.string().min(1, "Refresh token required"),
-        }),
+const refreshTokenValidation = z.object({
+    body: z.object({
+        refreshToken: z.string().min(1, "Refresh token required"),
     }),
-};
+});
 
 export const authValidation = {
     registerValidation,

@@ -37,4 +37,6 @@ router.patch(
 
 router.get("/status/summary", auth(Role.LANDLORD), propertyController.getPropertyStatusSummary)
 
+router.get("/admin/all", auth(Role.ADMIN), propertyController.getAllPropertiesForAdmin)
+
 export const propertyRoutes = router

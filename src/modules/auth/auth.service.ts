@@ -6,6 +6,7 @@ import { ILoginUser, RegisterUserPayload } from "./auth.interface";
 import { jwtUtils } from "../../utils/jwt";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
+import { ActiveStatus } from "../../../generated/prisma/enums";
 
 const registerUserIntoDB = async (payload: RegisterUserPayload) =>{
     const { name, email, password, role } = payload;
@@ -44,7 +45,7 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) =>{
 const loginUser = async (payload : ILoginUser) => {
     const { email, password } = payload;
 
-    const user = await prisma.user.findUniqueOrThrow({
+    const user = await prisma.user.findUnique({
         where : {email}
     })
 
@@ -58,12 +59,8 @@ const loginUser = async (payload : ILoginUser) => {
         throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email or password");
     }
 
-    if (user.activeStatus === "BLOCKED") {
+    if (user.activeStatus === ActiveStatus.BLOCKED) {
         throw new ApiError(httpStatus.FORBIDDEN, "Your account has been blocked. Please contact support.");
-    }
-
-    if(!isPasswordMatched){
-        throw new ApiError(httpStatus.UNAUTHORIZED, "Password is incorrect");
     }
 
     const jwtPayload = {

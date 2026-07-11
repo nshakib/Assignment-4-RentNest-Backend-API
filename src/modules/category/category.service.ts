@@ -1,6 +1,6 @@
 import ApiError from "../../errors/ApiError"
 import { prisma } from "../../lib/prisma"
-import { ICreateCategoryPayload } from "./category.interface"
+import { ICreateCategoryPayload, IUpdateCategoryPayload } from "./category.interface"
 import httpStatus from "http-status"
 
 
@@ -31,7 +31,7 @@ const getAllCategories = async () => {
     return result
 }
 
-const updateCategory = async (categoryId: string, payload: ICreateCategoryPayload) => {
+const updateCategory = async (categoryId: string, payload: IUpdateCategoryPayload) => {
     const category = await prisma.category.findUniqueOrThrow({
         where: { id: categoryId },
     })

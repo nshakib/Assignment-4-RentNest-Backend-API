@@ -182,10 +182,46 @@ const rejectRentalRequest = async (
     return result
 }
 
+const getAllRentalRequestsForAdmin = async (query: IRentalRequestQuery) => {
+    const page = Math.max(Number(query.page) || 1, 1)
+    const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100)
+    const skip = (page - 1) * limit
+
+    const sortBy = query.sortBy || "createdAt"
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc"
+
+    const where = {
+        ...(query.status ? { status: query.status } : {})
+    }
+
+    const [requests, total] = await Promise.all([
+        prisma.rentalRequest.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: { [sortBy]: sortOrder },
+            include: {
+                property: {
+                    select: { id: true, title: true, city: true, landlordId: true }
+                },
+                tenant: {
+                    select: { id: true, name: true, email: true }
+                }
+            }
+        }),
+        prisma.rentalRequest.count({ where })
+    ])
+
+    return {
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        data: requests
+    }
+}
 export const rentalService = {
   submitRentalRequest,
   getMyRentalRequests,
   getReceivedRentalRequests,
   approveRentalRequest,
-  rejectRentalRequest
+  rejectRentalRequest,
+  getAllRentalRequestsForAdmin
 }
