@@ -1,6 +1,6 @@
 import cron from "node-cron"
-import { prisma } from "../lib/prisma"
-import { RentalRequestStatus } from "../../generated/prisma/enums"
+import { prisma } from "../lib/prisma.js"
+import { RentalRequestStatus } from "../../generated/prisma/enums.js"
 
 export const startExpiredRentalJob = () => {
     cron.schedule("0 0 * * *", async () => {

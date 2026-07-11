@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs"
-import { ActiveStatus, Role } from "../../../generated/prisma/enums"
-import { prisma } from "../../lib/prisma"
-import { IChangePasswordPayload, IUpdateProfilePayload } from "./user.interface"
-import ApiError from "../../errors/ApiError"
+import { ActiveStatus, Role } from "../../../generated/prisma/enums.js"
+import { prisma } from "../../lib/prisma.js"
+import { IChangePasswordPayload, IUpdateProfilePayload } from "./user.interface.js"
+import ApiError from "../../errors/ApiError.js"
 import httpStatus from "http-status"
 
 const getMyProfile = async (userId: string) => {

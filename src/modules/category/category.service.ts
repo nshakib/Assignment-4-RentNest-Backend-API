@@ -1,6 +1,6 @@
-import ApiError from "../../errors/ApiError"
-import { prisma } from "../../lib/prisma"
-import { ICreateCategoryPayload, IUpdateCategoryPayload } from "./category.interface"
+import ApiError from "../../errors/ApiError.js"
+import { prisma } from "../../lib/prisma.js"
+import { ICreateCategoryPayload, IUpdateCategoryPayload } from "./category.interface.js"
 import httpStatus from "http-status"
 
 

@@ -1,8 +1,8 @@
-import { PropertyStatus, RentalRequestStatus } from "../../../generated/prisma/enums";
-import { prisma } from "../../lib/prisma";
-import ApiError from "../../errors/ApiError";
+import { PropertyStatus, RentalRequestStatus } from "../../../generated/prisma/enums.js";
+import { prisma } from "../../lib/prisma.js";
+import ApiError from "../../errors/ApiError.js";
 import httpStatus from "http-status";
-import { ICreateRentalRequestPayload, IRejectRentalRequestPayload, IRentalRequestQuery } from "./rental.interface";
+import { ICreateRentalRequestPayload, IRejectRentalRequestPayload, IRentalRequestQuery } from "./rental.interface.js";
 
 const submitRentalRequest = async (tenantId: string, propertyId: string, payload: ICreateRentalRequestPayload) => {
 

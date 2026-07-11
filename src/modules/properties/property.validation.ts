@@ -1,5 +1,5 @@
 import {z} from "zod";
-import { PropertyStatus } from "../../../generated/prisma/enums";
+import { PropertyStatus } from "../../../generated/prisma/enums.js";
 
 const createPropertyValidation = z.object({
     body:z.object({

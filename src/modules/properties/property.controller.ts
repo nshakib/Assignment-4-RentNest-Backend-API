@@ -1,12 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
-import { propertyService } from "./property.service";
-import { PropertyStatus } from "../../../generated/prisma/enums";
-import { IPropertyQuery } from "./property.interface";
-import { PropertyWhereInput } from "../../../generated/prisma/models";
-import { prisma } from "../../lib/prisma";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import { propertyService } from "./property.service.js";
 
 const createProperty = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
     const id = req.user?.id

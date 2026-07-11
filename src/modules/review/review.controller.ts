@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
 import httpStatus from "http-status"
-import { reviewService } from "./review.service"
-import { catchAsync } from "../../utils/catchAsync"
-import { sendResponse } from "../../utils/sendResponse"
+import { reviewService } from "./review.service.js"
+import { catchAsync } from "../../utils/catchAsync.js"
+import { sendResponse } from "../../utils/sendResponse.js"
 
 const createReview = catchAsync(async (req: Request, res: Response) => {
     const tenantId = req.user?.id as string

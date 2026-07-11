@@ -1,7 +1,7 @@
-import ApiError from "../../errors/ApiError";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
-import { rentalService } from "./rental.service";
+import ApiError from "../../errors/ApiError.js";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import { rentalService } from "./rental.service.js";
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 

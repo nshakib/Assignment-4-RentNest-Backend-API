@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
-import { categoryService } from "./category.service";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import { categoryService } from "./category.service.js";
 import httpStatus from "http-status"
 
 

@@ -1,19 +1,21 @@
 // payment.service.ts
-import config from "../../config"
-import { prisma } from "../../lib/prisma"
-import { stripe } from "../../lib/stripe"
-import ApiError from "../../errors/ApiError"
+import config from "../../config/index.js"
+import { prisma } from "../../lib/prisma.js"
+import { stripe } from "../../lib/stripe.js"
+import ApiError from "../../errors/ApiError.js"
 import httpStatus from "http-status"
-import { PaymentStatus, RentalRequestStatus } from "../../../generated/prisma/enums"
+import { PaymentStatus, RentalRequestStatus } from "../../../generated/prisma/enums.js"
 import Stripe from "stripe"
-import { handleChangeSubscription, handleCheckoutCompleted, handleInvoiceFailed, handleInvoicePaid } from "../../utils/payment.utils"
+import { handleChangeSubscription, handleCheckoutCompleted, handleInvoiceFailed, handleInvoicePaid } 
+from "../../utils/payment.utils.js"
+import { Prisma } from "../../../generated/prisma/client.js"
 
 const createCheckoutSession = async (tenantId: string, rentalRequestId: string) => {
     
     if (!rentalRequestId || typeof rentalRequestId !== "string") {
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid rental request ID");
     }
-    const transactionResult = await prisma.$transaction(async (tx) => {
+    const transactionResult = await prisma.$transaction(async (tx:Prisma.TransactionClient) => {
         
         const rentalRequest = await tx.rentalRequest.findUniqueOrThrow({
             where: { 

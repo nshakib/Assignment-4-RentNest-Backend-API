@@ -1,7 +1,7 @@
-import { prisma } from "../../lib/prisma"
-import { ICreatePropertyPayload, IPropertyQuery, IUpdatePropertyPayload, IUpdatePropertyStatusPayload } from "./property.interface"
-import { PropertyWhereInput } from "../../../generated/prisma/models"
-import { PropertyStatus } from "../../../generated/prisma/enums"
+import { prisma } from "../../lib/prisma.js"
+import { ICreatePropertyPayload, IPropertyQuery, IUpdatePropertyPayload, IUpdatePropertyStatusPayload } from "./property.interface.js"
+import { PropertyWhereInput } from "../../../generated/prisma/models.js"
+import { PropertyStatus } from "../../../generated/prisma/enums.js"
 
 
 const createProperty = async ( payload : ICreatePropertyPayload, userId : string) => {
@@ -328,7 +328,7 @@ const getPropertyStatusSummary = async (landlordId: string) => {
         }
     })
 
-    const summary = result.reduce((acc, item) => {
+    const summary = result.reduce((acc: Record<string, number>, item: { status: string; _count: { id: number } }) => {
         acc[item.status] = item._count.id
         return acc
     }, {} as Record<string, number>)

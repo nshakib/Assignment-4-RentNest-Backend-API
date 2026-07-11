@@ -1,4 +1,4 @@
-import { sendResponse } from "../utils/sendResponse";
+import { sendResponse } from "../utils/sendResponse.js";
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 

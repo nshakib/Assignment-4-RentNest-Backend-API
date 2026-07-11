@@ -1,7 +1,7 @@
-import { RentalRequestStatus } from "../../../generated/prisma/enums"
-import ApiError from "../../errors/ApiError"
-import { prisma } from "../../lib/prisma"
-import { ICreateReviewPayload } from "./review.interface"
+import { RentalRequestStatus } from "../../../generated/prisma/enums.js"
+import ApiError from "../../errors/ApiError.js"
+import { prisma } from "../../lib/prisma.js"
+import { ICreateReviewPayload } from "./review.interface.js"
 import httpStatus from "http-status"
 
 const createReview = async (tenantId: string, payload: ICreateReviewPayload) => {

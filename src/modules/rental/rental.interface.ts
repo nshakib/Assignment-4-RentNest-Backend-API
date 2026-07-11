@@ -1,4 +1,4 @@
-import { RentalRequestStatus } from "../../../generated/prisma/enums";
+import { RentalRequestStatus } from "../../../generated/prisma/enums.js";
 
 export interface ICreateRentalRequestPayload {
   startDate: Date;
