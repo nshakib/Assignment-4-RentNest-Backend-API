@@ -2,11 +2,13 @@ import { Router } from "express";
 import { rentalController } from "./rental.controller";
 import { auth } from "../../middlewares/auth";
 import { Role } from "../../../generated/prisma/enums";
+import ValidateRequest from "../../middlewares/validateRequest";
+import { rentalRequestValidation } from "./rentalRequest.validation";
 
 
 const router = Router();
 
-router.post("/:id", auth(Role.TENANT),rentalController.createRentalRequest);
+router.post("/:id", auth(Role.TENANT),ValidateRequest(rentalRequestValidation.createRentalRequestValidation),rentalController.createRentalRequest);
 
 // rentalRequest.route.ts
 router.get("/my-requests", auth(Role.TENANT), rentalController.getMyRentalRequests)

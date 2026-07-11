@@ -5,9 +5,9 @@ import { userController } from "./user.controller";
 
 const router = Router();
 
-router.get("/me", auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), userController.getMyProfile)
-
-router.patch("/me", auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), userController.updateMyProfile)
+router.get("/me", auth(), userController.getMyProfile)
+router.patch("/me", auth(), userController.updateMyProfile)
+router.patch("/change-password", auth(), userController.changePassword)
 
 router.get("/", auth(Role.ADMIN), userController.getAllUsers)
 router.patch("/:id/status", auth(Role.ADMIN), userController.updateUserStatus)

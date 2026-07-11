@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { Prisma } from "../../generated/prisma/client";
 import ApiError from "../errors/ApiError";
+import { ZodError } from "zod";
 
 export const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
     console.log("Error : ", err);
@@ -9,11 +10,19 @@ export const globalErrorHandler = (err: any, req: Request, res: Response, next: 
     let statusCode;
     let errorMessage = err.message || "Internal Server Error";
     let errorName = err.name || "Internal Server Error";
-    // let errorDetails = err.stack
+    let errorDetails: any = { name: errorName, stack: err.stack };
 
     if (err instanceof ApiError) {
         statusCode = err.statusCode
         errorMessage = err.message
+    }
+    else if (err instanceof ZodError) {
+        statusCode = httpStatus.BAD_REQUEST
+        errorMessage = "Validation error"
+        errorDetails = err.issues.map(issue => ({
+            path: issue.path.join("."),
+            message: issue.message
+        }))
     }
     else if(err instanceof Prisma.PrismaClientValidationError){
         statusCode = httpStatus.BAD_REQUEST;
@@ -46,9 +55,6 @@ export const globalErrorHandler = (err: any, req: Request, res: Response, next: 
     res.status(statusCode || httpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: errorMessage,
-        errorDetails: {
-            name: errorName,
-            stack: err.stack
-        }
+        errorDetails
     })
 }

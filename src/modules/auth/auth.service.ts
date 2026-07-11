@@ -4,6 +4,8 @@ import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { ILoginUser, RegisterUserPayload } from "./auth.interface";
 import { jwtUtils } from "../../utils/jwt";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 
 const registerUserIntoDB = async (payload: RegisterUserPayload) =>{
     const { name, email, password, role } = payload;
@@ -12,7 +14,7 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) =>{
     })
 
     if (isUserExist) {
-        throw new Error("User with this email already exists");
+        throw new ApiError(httpStatus.BAD_REQUEST, "User with this email already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds))
@@ -46,14 +48,22 @@ const loginUser = async (payload : ILoginUser) => {
         where : {email}
     })
 
-    if (user.activeStatus === "BLOCKED") {
-        throw new Error("Your account has been blocked. Please contact support.");
+    if (!user) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email or password");
     }
 
     const isPasswordMatched = await bcrypt.compare(password, user.password);
 
+    if (!isPasswordMatched) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email or password");
+    }
+
+    if (user.activeStatus === "BLOCKED") {
+        throw new ApiError(httpStatus.FORBIDDEN, "Your account has been blocked. Please contact support.");
+    }
+
     if(!isPasswordMatched){
-        throw new Error("Password is incorrect");
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Password is incorrect");
     }
 
     const jwtPayload = {
@@ -84,8 +94,8 @@ const loginUser = async (payload : ILoginUser) => {
 const refreshToken = async (refreshToken : string) => {
     const verifiedRefreshToken = jwtUtils.verifyToken(refreshToken, config.jwt_refresh_secret);
 
-    if(!verifiedRefreshToken.success){
-        throw new Error(verifiedRefreshToken.error)
+    if (!verifiedRefreshToken.success) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
     }
 
     const {id} = verifiedRefreshToken.data as JwtPayload;
@@ -96,8 +106,12 @@ const refreshToken = async (refreshToken : string) => {
         }
     })
 
+    if (!user) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+    }
+
     if(user.activeStatus === "BLOCKED"){
-        throw new Error("User is blocked!")
+        throw new ApiError(httpStatus.FORBIDDEN, "User is blocked!")
     }
 
     const jwtPayload = {

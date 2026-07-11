@@ -1,47 +1,45 @@
-// Tenant: submit a rental request
-
 import { PropertyStatus, RentalRequestStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 import { ICreateRentalRequestPayload, IRejectRentalRequestPayload, IRentalRequestQuery } from "./rental.interface";
 
 const submitRentalRequest = async (tenantId: string, propertyId: string, payload: ICreateRentalRequestPayload) => {
-  const property = await prisma.property.findUniqueOrThrow({
-        where: { 
-            id: propertyId 
+
+    const property = await prisma.property.findUniqueOrThrow({
+        where: { id: propertyId },
+    });
+
+    if (property.landlordId === tenantId){
+        throw new ApiError(httpStatus.BAD_REQUEST, "You cannot submit a rental request for your own property!")
+    }
+
+    if (property.status !== PropertyStatus.ACTIVE){
+        throw new ApiError(httpStatus.BAD_REQUEST, "This property is not available for rent");
+    }
+
+    const existing = await prisma.rentalRequest.findFirst({
+        where: {
+            propertyId,
+            tenantId,
+            status: RentalRequestStatus.PENDING,
         },
     });
 
-    if(property.landlordId === tenantId){
-        throw new Error("You cannot submit a rental request for your own property!")
+    if (existing) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "You already have a pending request for this property");
     }
 
-  if (property.status !== PropertyStatus.ACTIVE) {
-    throw new Error("This property is not available for rent");
-  }
-
-  // Prevent duplicate pending requests from the same tenant for the same property
-  const existing = await prisma.rentalRequest.findFirst({
-    where: {
-      propertyId,
-      tenantId,
-      status: RentalRequestStatus.PENDING,
-    },
-  });
-
-  if (existing) {
-    throw new Error("You already have a pending request for this property");
-  }
-
-  const result = await prisma.rentalRequest.create({
-    data: {
-      ...payload,
-      propertyId,
-      tenantId,
-    },
-    include: {
-      property: true,
-    },
-  });
+    const result = await prisma.rentalRequest.create({
+        data: {
+            ...payload,
+            propertyId,
+            tenantId,
+        },
+        include: {
+            property: true,
+        },
+    });
 
   return result;
 };
@@ -128,11 +126,11 @@ const approveRentalRequest = async (requestId: string, landlordId: string) => {
     })
 
     if (rentalRequest.property.landlordId !== landlordId) {
-        throw new Error("You are not authorized to approve this request")
+        throw new ApiError(httpStatus.FORBIDDEN, "You are not authorized to approve this request")
     }
 
     if (rentalRequest.status !== RentalRequestStatus.PENDING) {
-        throw new Error(`Cannot approve a request that is already ${rentalRequest.status}`)
+        throw new ApiError(httpStatus.BAD_REQUEST, `Cannot approve a request that is already ${rentalRequest.status}`)
     }
 
     const result = await prisma.rentalRequest.update({
@@ -161,11 +159,11 @@ const rejectRentalRequest = async (
     })
 
     if (rentalRequest.property.landlordId !== landlordId) {
-        throw new Error("You are not authorized to reject this request")
+        throw new ApiError(httpStatus.FORBIDDEN, "You are not authorized to reject this request")
     }
 
     if (rentalRequest.status !== RentalRequestStatus.PENDING) {
-        throw new Error(`Cannot reject a request that is already ${rentalRequest.status}`)
+        throw new ApiError(httpStatus.BAD_REQUEST, `Cannot reject a request that is already ${rentalRequest.status}`)
     }
 
     const result = await prisma.rentalRequest.update({
@@ -190,4 +188,4 @@ export const rentalService = {
   getReceivedRentalRequests,
   approveRentalRequest,
   rejectRentalRequest
-};
+}

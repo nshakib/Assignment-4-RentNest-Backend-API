@@ -4,11 +4,15 @@ import { prisma } from "../../lib/prisma"
 import { stripe } from "../../lib/stripe"
 import ApiError from "../../errors/ApiError"
 import httpStatus from "http-status"
-import { RentalRequestStatus } from "../../../generated/prisma/enums"
+import { PaymentStatus, RentalRequestStatus } from "../../../generated/prisma/enums"
 import Stripe from "stripe"
 import { handleChangeSubscription, handleCheckoutCompleted, handleInvoiceFailed, handleInvoicePaid } from "../../utils/payment.utils"
 
 const createCheckoutSession = async (tenantId: string, rentalRequestId: string) => {
+    
+    if (!rentalRequestId || typeof rentalRequestId !== "string") {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid rental request ID");
+    }
     const transactionResult = await prisma.$transaction(async (tx) => {
         
         const rentalRequest = await tx.rentalRequest.findUniqueOrThrow({
@@ -21,12 +25,26 @@ const createCheckoutSession = async (tenantId: string, rentalRequestId: string) 
             }
         })
 
+        if (!rentalRequest) {
+            throw new ApiError(httpStatus.NOT_FOUND, "Rental request not found");
+        }
+
         if (rentalRequest.tenantId !== tenantId) {
             throw new ApiError(httpStatus.FORBIDDEN, "You are not authorized for this rental request")
         }
 
         if (rentalRequest.status !== RentalRequestStatus.APPROVED) {
             throw new ApiError(httpStatus.BAD_REQUEST, "Rental request must be approved before payment")
+        }
+
+        const existingPayment = await tx.payment.findFirst({
+            where: { 
+                rentalRequestId, 
+                status:PaymentStatus.PAID 
+            }
+        });
+        if (existingPayment) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Payment already completed for this request");
         }
 
         let stripeCustomerId = rentalRequest.stripeCustomerId
@@ -45,14 +63,20 @@ const createCheckoutSession = async (tenantId: string, rentalRequestId: string) 
             })
         }
 
-        const amountInPoisha = Math.round(Number(rentalRequest.property.monthlyRent) * 100)
+        const amountInPaisa = Math.round(Number(rentalRequest.property.monthlyRent) * 100)
         console.log("DEBUG config.app_url:", JSON.stringify(config.app_url))
+
+
+        if (isNaN(amountInPaisa) || amountInPaisa <= 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid rental amount");
+        }
+
         const session = await stripe.checkout.sessions.create({
             line_items: [
                 {
                     price_data: {
                         currency: "bdt",
-                        unit_amount: amountInPoisha,
+                        unit_amount: amountInPaisa,
                         recurring: { interval: "month" },
                         product_data: {
                             name: `Rent - ${rentalRequest.property.title}`
@@ -80,7 +104,12 @@ const createCheckoutSession = async (tenantId: string, rentalRequestId: string) 
 const handleWebhook = async (payload: Buffer, signature: string) => {
     const endpointSecret = config.stripe_webhook_secret
 
-    const event = stripe.webhooks.constructEvent(payload, signature, endpointSecret)
+    let event: Stripe.Event;
+    try {
+        event = stripe.webhooks.constructEvent(payload, signature, endpointSecret);
+    } catch (err: any) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Webhook signature verification failed: ${err.message}`);
+    }
 
     switch (event.type) {
         case "checkout.session.completed":
@@ -102,22 +131,38 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
     }
 }
 
-const getMyPaymentHistory = async (tenantId: string) => {
-    const payments = await prisma.payment.findMany({
-        where: { tenantId },
-        include: {
-            rentalRequest: {
-                include: {
-                    property: {
-                        select: { id: true, title: true, city: true }
+const getMyPaymentHistory = async (tenantId: string, page: number = 1, limit: number = 10) => {
+    const skip = (page - 1) * limit;
+
+    const [payments, total] = await Promise.all([
+        prisma.payment.findMany({
+            where: { tenantId },
+            include: {
+                rentalRequest: {
+                    include: {
+                        property: {
+                            select: { id: true, title: true, city: true }
+                        }
                     }
                 }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    })
-    return payments
-}
+            },
+            orderBy: { createdAt: "desc" },
+            skip,
+            take: limit
+        }),
+        prisma.payment.count({ where: { tenantId } })
+    ]);
+
+    return {
+        data: payments,
+        meta: {
+            page,
+            limit,
+            total,
+            totalPage: Math.ceil(total / limit)
+        }
+    };
+};
 
 
 export const paymentService = {

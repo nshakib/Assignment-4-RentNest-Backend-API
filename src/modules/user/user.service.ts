@@ -1,6 +1,9 @@
+import bcrypt from "bcryptjs"
 import { ActiveStatus, Role } from "../../../generated/prisma/enums"
 import { prisma } from "../../lib/prisma"
-import { IUpdateProfilePayload } from "./user.interface"
+import { IChangePasswordPayload, IUpdateProfilePayload } from "./user.interface"
+import ApiError from "../../errors/ApiError"
+import httpStatus from "http-status"
 
 const getMyProfile = async (userId: string) => {
     const user = await prisma.user.findUniqueOrThrow({
@@ -91,9 +94,34 @@ const updateUserStatus = async (userId: string, activeStatus: ActiveStatus) => {
     return result
 }
 
+const changePassword = async (userId: string, payload: IChangePasswordPayload) => {
+    const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId }
+    })
+
+    const isMatch = await bcrypt.compare(payload.oldPassword, user.password)
+
+    if (!isMatch) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Old password is incorrect")
+    }
+
+    if (payload.oldPassword === payload.newPassword) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "New password must be different from old password")
+    }
+
+    const hashedPassword = await bcrypt.hash(payload.newPassword, 12)
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword }
+    })
+
+    return { message: "Password changed successfully" }
+}
 export const userService = {
     getMyProfile,
     updateMyProfile,
     getAllUsers,
-    updateUserStatus
+    updateUserStatus,
+    changePassword
 }

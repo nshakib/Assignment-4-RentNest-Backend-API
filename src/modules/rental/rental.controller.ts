@@ -1,3 +1,4 @@
+import ApiError from "../../errors/ApiError";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { rentalService } from "./rental.service";
@@ -8,8 +9,8 @@ const createRentalRequest = catchAsync(async (req : Request, res : Response, nex
     const tenantId = req.user?.id
 
     const propertyId = req.params.id
-    if(!propertyId){
-        throw new Error("Property id is required in the params");
+    if (!propertyId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Property id is required in the params")
     }
 
     const payload = req.body;
