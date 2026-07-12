@@ -12,6 +12,7 @@ import { Prisma } from "../../../generated/prisma/client.js"
 
 const createCheckoutSession = async (tenantId: string, rentalRequestId: string) => {
     
+    
     if (!rentalRequestId || typeof rentalRequestId !== "string") {
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid rental request ID");
     }
@@ -89,6 +90,9 @@ const createCheckoutSession = async (tenantId: string, rentalRequestId: string) 
             ],
             mode: "subscription",
             customer: stripeCustomerId,
+            subscription_data: {
+                metadata: { tenantId, rentalRequestId }
+            },
             payment_method_types: ["card"],
             success_url: `${config.app_url}/payment/success?rentalRequestId=${rentalRequestId}`,
             cancel_url: `${config.app_url}/payment/cancel`,

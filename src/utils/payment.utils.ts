@@ -1,4 +1,5 @@
 import Stripe from "stripe"
+import { stripe } from "../lib/stripe.js"
 import { prisma } from "../lib/prisma.js"
 import { PaymentStatus, RentalRequestStatus, SubscriptionStatus } from "../../generated/prisma/enums.js"
 
@@ -17,16 +18,19 @@ export const handleCheckoutCompleted = async (session: Stripe.Checkout.Session) 
         return
     }
 
-    await prisma.rentalRequest.update({
-        where: { id: rentalRequestId },
-        data: {
-            stripeSubscriptionId,
-            subscriptionStatus: SubscriptionStatus.ACTIVE,
-             status: RentalRequestStatus.ACTIVE
-        }
-    })
-
-    console.log(`Subscription activated for rental request ${rentalRequestId}`)
+    try {
+        await prisma.rentalRequest.update({
+            where: { id: rentalRequestId },
+            data: {
+                stripeSubscriptionId,
+                subscriptionStatus: SubscriptionStatus.ACTIVE,
+                status: RentalRequestStatus.ACTIVE
+            }
+        })
+        console.log(`Subscription activated for rental request ${rentalRequestId}`)
+    } catch (error) {
+        console.log(`Webhook: Could not update rental request ${rentalRequestId} — may not exist`)
+    }
 }
 
 export const handleInvoicePaid = async (invoice: Stripe.Invoice) => {
@@ -37,13 +41,27 @@ export const handleInvoicePaid = async (invoice: Stripe.Invoice) => {
         return
     }
 
-    const rentalRequest = await prisma.rentalRequest.findUnique({
+    let rentalRequest = await prisma.rentalRequest.findUnique({
         where: { stripeSubscriptionId }
     })
 
     if (!rentalRequest) {
-        console.log(`Webhook: No rental request found for subscription ${stripeSubscriptionId}`)
-        return
+        const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+        const rentalRequestId = subscription.metadata?.rentalRequestId
+
+        if (!rentalRequestId) {
+            console.log(`Webhook: No rentalRequestId in subscription metadata for ${stripeSubscriptionId}`)
+            return
+        }
+
+        rentalRequest = await prisma.rentalRequest.update({
+            where: { id: rentalRequestId },
+            data: {
+                stripeSubscriptionId,
+                subscriptionStatus: SubscriptionStatus.ACTIVE,
+                status: RentalRequestStatus.ACTIVE
+            }
+        })
     }
 
     const existing = await prisma.payment.findFirst({
@@ -62,6 +80,8 @@ export const handleInvoicePaid = async (invoice: Stripe.Invoice) => {
             paidAt: new Date()
         }
     })
+
+    console.log(`Payment recorded for rental request ${rentalRequest.id}`)
 }
 
 export const handleInvoiceFailed = async (invoice: Stripe.Invoice) => {
