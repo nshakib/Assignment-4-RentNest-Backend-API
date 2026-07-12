@@ -9,9 +9,10 @@ const ValidateRequest = (schema : z.ZodType) => async (req : Request, res : Resp
             query : req.query,
             params : req.params
         }) as unknown as { body?: unknown; params?: unknown; query?: unknown }
-        req.body = parsed.body
-        req.params = parsed.params as Record<string, string>
-        Object.assign(req.query, parsed.query)
+        
+        if (parsed.body !== undefined) req.body = parsed.body
+        if (parsed.params !== undefined) req.params = parsed.params as Record<string, string>
+        if (parsed.query !== undefined) Object.assign(req.query, parsed.query)
 
         next()
     } catch (error) {
