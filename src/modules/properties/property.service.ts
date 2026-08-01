@@ -26,7 +26,22 @@ const createProperty = async ( payload : ICreatePropertyPayload, userId : string
                         amenityId // or whatever the FK field is named on PropertyAmenity
                     }))
                 }
-                : undefined
+                : undefined,
+                
+                images:
+                        images && images.length > 0
+                          ? {
+                              create: images.map((url: string) => ({
+                                url,
+                              })),
+                            }
+                          : undefined,
+                    },
+                include: {
+                  images: true,
+                  amenities: true,
+                  category: true,
+                },
         }
     })
 
