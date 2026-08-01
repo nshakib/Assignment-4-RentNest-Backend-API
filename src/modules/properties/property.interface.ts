@@ -17,7 +17,8 @@ export interface ICreatePropertyPayload {
     petsAllowed?: boolean
     smokingAllowed?: boolean
     availableFrom?: Date
-    amenities?: string[] // array of amenity IDs, handled via nested create/connect
+    amenities?: string[] 
+    images?: string[] 
 }
 
 export interface IUpdatePropertyPayload{
@@ -39,6 +40,7 @@ export interface IUpdatePropertyPayload{
     smokingAllowed?: boolean
     availableFrom?: Date
     amenities?: string[]
+    images?: string[]
 }
 
 export interface IPropertyQuery {

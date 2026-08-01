@@ -14,7 +14,7 @@ const createProperty = async ( payload : ICreatePropertyPayload, userId : string
     if(user.activeStatus === "BLOCKED"){
         throw new Error("User is blocked!")
     }
-    const { amenities, ...propertyData } = payload
+    const { amenities,images, ...propertyData } = payload
 
     const result = await prisma.property.create({
         data : {
@@ -27,23 +27,22 @@ const createProperty = async ( payload : ICreatePropertyPayload, userId : string
                     }))
                 }
                 : undefined,
-                
                 images:
-                        images && images.length > 0
-                          ? {
-                              create: images.map((url: string) => ({
-                                url,
-                              })),
-                            }
-                          : undefined,
-                    },
-                include: {
-                  images: true,
-                  amenities: true,
-                  category: true,
+                    images && images.length > 0
+                        ? {
+                            create: images.map((imageUrl: string, index: number) => ({
+                            imageUrl,
+                            isPrimary: index === 0, 
+                            })),
+                        }
+                        : undefined,
                 },
-        }
-    })
+                include: {
+                    images: true,
+                    amenities: true,
+                    category: true,
+                },
+    });
 
     return result
 }
@@ -268,7 +267,7 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
         throw new Error("You are not the owner of this property!")
     }
 
-    const { amenities, ...propertyData } = payload;
+    const { amenities, images, ...propertyData } = payload;
     const result = await prisma.property.update({
         where : {
             id : propertyId
