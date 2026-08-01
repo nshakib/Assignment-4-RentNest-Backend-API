@@ -280,6 +280,15 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
                 create: amenities.map((amenityId) => ({ amenityId })),
                 },
             }),
+            ...(images && {
+                images: {
+                    deleteMany: {}, // clear old images
+                    create: images.map((imageUrl: string, index: number) => ({
+                        imageUrl,
+                        isPrimary: index === 0, // first image is primary
+                    })),
+                }
+            })
         },
         include: {
             landlord: {
@@ -287,6 +296,9 @@ const updateProperty = async (propertyId : string, payload : IUpdatePropertyPayl
                     password: true
                 }
             },
+            images: true,
+            amenities: true,
+            category: true
         }
     })
 
