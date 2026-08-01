@@ -8,11 +8,7 @@ import { rentalRequestValidation } from "./rentalRequest.validation.js";
 
 const router = Router();
 
-router.get(
-    "/:id", 
-    auth(Role.TENANT), 
-    rentalController.getRentalRequestById
-);
+
 
 router.post("/:id", auth(Role.TENANT),ValidateRequest(rentalRequestValidation.createRentalRequestValidation),rentalController.createRentalRequest);
 
@@ -30,5 +26,11 @@ router.patch(
 )
 
 router.get("/admin/all", auth(Role.ADMIN), rentalController.getAllRentalRequestsForAdmin)
+
+router.get(
+    "/:id", 
+    auth(Role.TENANT), 
+    rentalController.getRentalRequestById
+);
 
 export const rentalRoutes = router
