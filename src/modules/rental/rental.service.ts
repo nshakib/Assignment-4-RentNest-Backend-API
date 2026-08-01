@@ -182,6 +182,8 @@ const rejectRentalRequest = async (
     return result
 }
 
+
+
 const getAllRentalRequestsForAdmin = async (query: IRentalRequestQuery) => {
     const page = Math.max(Number(query.page) || 1, 1)
     const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 100)
@@ -217,11 +219,38 @@ const getAllRentalRequestsForAdmin = async (query: IRentalRequestQuery) => {
         data: requests
     }
 }
+
+const getRentalRequestById = async (tenantId: string, requestId: string) => {
+    const request = await prisma.rentalRequest.findUnique({
+        where: { 
+            id: requestId,
+            tenantId: tenantId // Security: Ensure tenant owns this request
+        },
+        include: {
+            property: {
+                select: {
+                    title: true,
+                    monthlyRent: true,
+                    city: true,
+                    images: true // If you need images for the pay page
+                }
+            }
+        }
+    });
+
+    if (!request) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Rental request not found");
+    }
+
+    return request;
+};
+
 export const rentalService = {
   submitRentalRequest,
   getMyRentalRequests,
   getReceivedRentalRequests,
   approveRentalRequest,
   rejectRentalRequest,
-  getAllRentalRequestsForAdmin
+  getAllRentalRequestsForAdmin,
+  getRentalRequestById
 }

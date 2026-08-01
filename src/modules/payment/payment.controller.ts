@@ -40,8 +40,9 @@ const getMyPaymentHistory = catchAsync(async (req: Request, res: Response) => {
 })
 
 
+
 export const paymentController = {
     createCheckoutSession,
     handleStripeWebhook,
-    getMyPaymentHistory
+    getMyPaymentHistory,
 }

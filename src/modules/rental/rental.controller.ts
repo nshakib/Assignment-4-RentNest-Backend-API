@@ -93,11 +93,30 @@ const getAllRentalRequestsForAdmin = catchAsync(async (req: Request, res: Respon
     })
 })
 
+const getRentalRequestById = catchAsync(async (req: Request, res: Response) => {
+    const tenantId = req.user?.id as string;
+    const { id } = req.params;
+
+    if (!id) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Request ID is required");
+    }
+
+    const result = await rentalService.getRentalRequestById(tenantId, id as string);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Rental request retrieved successfully",
+        data: result
+    });
+});
+
 export const rentalController = {
     createRentalRequest,
     getMyRentalRequests,
     getReceivedRentalRequests,
     approveRentalRequest,
     rejectRentalRequest,
-    getAllRentalRequestsForAdmin
+    getAllRentalRequestsForAdmin,
+    getRentalRequestById
 }

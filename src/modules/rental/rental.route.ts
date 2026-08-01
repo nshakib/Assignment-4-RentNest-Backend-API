@@ -8,6 +8,12 @@ import { rentalRequestValidation } from "./rentalRequest.validation.js";
 
 const router = Router();
 
+router.get(
+    "/:id", 
+    auth(Role.TENANT), 
+    rentalController.getRentalRequestById
+);
+
 router.post("/:id", auth(Role.TENANT),ValidateRequest(rentalRequestValidation.createRentalRequestValidation),rentalController.createRentalRequest);
 
 
