@@ -21,6 +21,7 @@ const createPropertyValidation = z.object({
         availableFrom: z.coerce.date().optional(),
         amenities: z.array(z.string().uuid("Invalid amenity ID")).optional(),
         images: z.array(z.string().url("Invalid image URL")).optional(),
+        status: z.nativeEnum(PropertyStatus).optional(),
     })
 })
 
@@ -44,6 +45,7 @@ const updatePropertyValidation = z.object({
         availableFrom: z.coerce.date().optional(),
         amenities: z.array(z.string().uuid()).optional(),
         images: z.array(z.string().url("Invalid image URL")).optional(),
+        status: z.nativeEnum(PropertyStatus).optional(),
     })
 })
 
