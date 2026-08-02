@@ -19,7 +19,8 @@ const createPropertyValidation = z.object({
         petsAllowed: z.boolean().optional(),
         smokingAllowed: z.boolean().optional(),
         availableFrom: z.coerce.date().optional(),
-        amenities: z.array(z.string().uuid("Invalid amenity ID")).optional()
+        amenities: z.array(z.string().uuid("Invalid amenity ID")).optional(),
+        images: z.array(z.string().url("Invalid image URL")).optional(),
     })
 })
 
@@ -41,7 +42,8 @@ const updatePropertyValidation = z.object({
         petsAllowed: z.boolean().optional(),
         smokingAllowed: z.boolean().optional(),
         availableFrom: z.coerce.date().optional(),
-        amenities: z.array(z.string().uuid()).optional()
+        amenities: z.array(z.string().uuid()).optional(),
+        images: z.array(z.string().url("Invalid image URL")).optional(),
     })
 })
 
